@@ -11,7 +11,14 @@
     </h1>
     <p>
         This event planner allows you to track expenses over a group trip so that you can split costs at the end of a trip.<br>
-        Click Here to register your trip <a href = "pretty.html"> <button> Create Trip </button> </a>
+        Click Here to register your trip <a href = "pretty.html"> <button> Create Trip </button> </a> <br>
+        Click here to access an already created trip 
+        <form action="/trip" method="GET">
+            <label for="tripID">Enter Trip Name:</label>
+            <input type="text" name="trip_name" placeholder="Enter trip name" required>
+            <button type="submit">Submit</button>
+        </form>
+        
     </p>
 
     <h1>
