@@ -1,5 +1,3 @@
-# Backend: Flask Boilerplate for Event Expense Splitter
-
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -17,12 +15,12 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
-
+    
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
+    
 class Expense(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     event_id = db.Column(db.Integer, db.ForeignKey('event.id'), nullable=False)
@@ -31,13 +29,25 @@ class Expense(db.Model):
     paid_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 # Routes
+@app.route('/')
+def home():
+    return "Welcome to the Event Expense Splitter API!"
+
 @app.route('/auth/signup', methods=['POST'])
-def signup():
+def signup_user():
     data = request.json
     new_user = User(name=data['name'], email=data['email'])
     db.session.add(new_user)
     db.session.commit()
     return jsonify({'message': 'User created successfully'}), 201
+
+@app.route('/auth/login', methods=['POST'])
+def login_user():
+    data = request.json
+    user = User.query.filter_by(email=data['email']).first()
+    if user and user.password == data['password']:  # Assuming password checking is done here
+        return jsonify({'access_token': 'some-token'})  # Replace 'some-token' with real token logic
+    return jsonify({'message': 'Invalid credentials'}), 401
 
 @app.route('/event/create', methods=['POST'])
 def create_event():

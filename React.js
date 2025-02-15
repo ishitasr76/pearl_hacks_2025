@@ -1,5 +1,3 @@
-// Frontend: React Boilerplate for Event Expense Splitter
-
 import React, { useState } from 'react';
 import axios from 'axios';
 
@@ -12,7 +10,7 @@ function App() {
 
   const handleSignup = async () => {
     try {
-      await axios.post('http://localhost:5000/auth/signup', { email, password, name: "User" });
+      await axios.post('http://127.0.0.1:5000/auth/signup', { email, password, name: "User" });
       alert('Signup successful!');
     } catch (error) {
       alert('Signup failed');
@@ -21,7 +19,7 @@ function App() {
 
   const handleLogin = async () => {
     try {
-      const res = await axios.post('http://localhost:5000/auth/login', { email, password });
+      const res = await axios.post('http://127.0.0.1:5000/auth/login', { email, password });
       setToken(res.data.access_token);
       alert('Login successful!');
     } catch (error) {
@@ -31,7 +29,7 @@ function App() {
 
   const createEvent = async () => {
     try {
-      const res = await axios.post('http://localhost:5000/event/create', { name: eventName }, {
+      const res = await axios.post('http://127.0.0.1:5000/event/create', { name: eventName, user_id: 1 }, {  // Replace 1 with the actual user_id
         headers: { Authorization: `Bearer ${token}` }
       });
       setEvents([...events, { id: res.data.event_id, name: eventName }]);
