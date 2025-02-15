@@ -10,18 +10,18 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# Models
+# Models9
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
-    
+
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     event_name = db.Column(db.String(100), nullable=False)
     creator_name = db.Column(db.String(100), nullable=False)
     total_people = db.Column(db.Integer, nullable=False)
-    
+
 class Expense(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     event_id = db.Column(db.Integer, db.ForeignKey('event.id'), nullable=False)
@@ -112,6 +112,22 @@ def add_expense():
     db.session.add(new_expense)
     db.session.commit()
     return jsonify({'message': 'Expense added successfully'})
+
+@app.route('/trip', methods=['GET'])
+def trip_form():
+    trip_name = request.args.get('trip_name')  # Retrieve the trip name from query parameters
+    if trip_name:
+        # Try to get the trip details from the database
+        trip = Event.query.filter_by(event_name=trip_name).first()
+        
+        if trip:
+            return f'You are accessing the trip with name: {trip.event_name} and the creater is:{trip.creator_name}'
+        else:
+            return f'Trip with the name "{trip_name}" not found.'
+    else:
+        return 'No trip name provided!'
+
+
 
 if __name__ == '__main__':
     with app.app_context():
