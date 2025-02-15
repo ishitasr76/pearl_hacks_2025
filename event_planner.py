@@ -45,23 +45,23 @@ def render_page(html_page):
     except:
         return "Page not found", 404  # Handle missing templates gracefully
 
-@app.route('/auth/signup', methods=['POST'])
-def signup_user():
-    data = request.form  # Use request.form instead of request.json for form submission
+# @app.route('/auth/signup', methods=['POST'])
+# def signup_user():
+#     data = request.form  # Use request.form instead of request.json for form submission
 
-    if not data or 'email' not in data or 'password' not in data or 'name' not in data:
-        return jsonify({'message': 'Missing required fields'}), 400
+#     if not data or 'email' not in data or 'password' not in data or 'name' not in data:
+#         return jsonify({'message': 'Missing required fields'}), 400
     
-    # Check if the email already exists
-    existing_user = User.query.filter_by(email=data['email']).first()
-    if existing_user:
-        return jsonify({'message': 'Email already exists'}), 400
+#     # Check if the email already exists
+#     existing_user = User.query.filter_by(email=data['email']).first()
+#     if existing_user:
+#         return jsonify({'message': 'Email already exists'}), 400
 
-    # Create new user and save to DB
-    new_user = User(name=data['name'], email=data['email'])
-    db.session.add(new_user)
-    db.session.commit()
-    return jsonify({'message': 'User created successfully'}), 201
+#     # Create new user and save to DB
+#     new_user = User(name=data['name'], email=data['email'])
+#     db.session.add(new_user)
+#     db.session.commit()
+#     return jsonify({'message': 'User created successfully'}), 201
 
 @app.route('/auth/login', methods=['POST'])
 def login_user():
@@ -79,6 +79,12 @@ def create_event():
     if not data or 'event_name' not in data or 'creator_name' not in data or 'total_people' not in data:
         return jsonify({'message': 'Missing required fields'}), 400
 
+    # Check if an event with the same name already exists
+    existing_event = Event.query.filter_by(event_name=data['event_name']).first()
+
+    if existing_event:
+        return jsonify({'message': 'A trip with this event name already exists. Please choose a different name.'}), 409
+
     # Create a new event with provided data
     new_event = Event(
         event_name=data['event_name'],
@@ -90,13 +96,9 @@ def create_event():
     db.session.add(new_event)
     db.session.commit()
 
-    # for event in Event:
-    #     print(event.event_name)
-    #     print(event.creator_name)
-    #     print(event.total_people)
-
     # Return a success message with the event ID
     return jsonify({'message': 'Event created successfully', 'event_id': new_event.id}), 201
+
 
 @app.route('/expense/add', methods=['POST'])
 def add_expense():
