@@ -113,6 +113,33 @@ def add_expense():
     db.session.commit()
     return jsonify({'message': 'Expense added successfully'})
 
+@app.route('/budget/pie_chart/<int:event_id>', methods=['GET'])
+def generate_pie_chart(event_id):
+    # Get all expenses for the specific event
+    expenses = Expense.query.filter_by(event_id=event_id).all()
+
+    # Extract descriptions and amounts
+    expense_labels = [expense.description for expense in expenses]
+    expense_amounts = [expense.amount for expense in expenses]
+
+    if not expense_labels or not expense_amounts:
+        return jsonify({'message': 'No expenses found for this event'}), 404
+
+    # Create a pie chart
+    fig, ax = plt.subplots()
+    ax.pie(expense_amounts, labels=expense_labels, autopct='%1.1f%%', startangle=90)
+    ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+
+    # Save the plot to a bytes buffer
+    img_buf = io.BytesIO()
+    plt.savefig(img_buf, format='png')
+    img_buf.seek(0)
+
+    # Encode the image to base64 for embedding in HTML
+    img_base64 = base64.b64encode(img_buf.getvalue()).decode('utf-8')
+
+    return jsonify({'pie_chart': img_base64})  # Return the base64 string for the pie chart
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()

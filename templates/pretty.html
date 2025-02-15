@@ -189,3 +189,39 @@
 
 </body>
 </html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Planner</title>
+</head>
+<body>
+    <h1>Budget Planner</h1>
+
+    <div id="pie-chart-container">
+        <h2>Event Expense Breakdown</h2>
+        <img id="pie-chart" src="" alt="Expense Pie Chart">
+    </div>
+
+    <script>
+        // Function to fetch the pie chart
+        function fetchPieChart(eventId) {
+            fetch(`/budget/pie_chart/${eventId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.pie_chart) {
+                        document.getElementById('pie-chart').src = `data:image/png;base64,${data.pie_chart}`;
+                    } else {
+                        alert("No data found for the given event.");
+                    }
+                })
+                .catch(error => console.error('Error fetching pie chart:', error));
+        }
+
+        // Call this function with the actual event ID (for example, 1)
+        fetchPieChart(1);
+    </script>
+</body>
+</html>
