@@ -18,8 +18,9 @@ class User(db.Model):
     
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    event_name = db.Column(db.String(100), nullable=False)
+    creator_name = db.Column(db.String(100), nullable=False)
+    total_people = db.Column(db.Integer, nullable=False)
     
 class Expense(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -28,14 +29,35 @@ class Expense(db.Model):
     amount = db.Column(db.Float, nullable=False)
     paid_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
+# Drop and recreate all tables in the database (only for development)
+with app.app_context():
+    db.drop_all()  # Drops all existing tables
+    db.create_all()  # Creates the tables according to the updated models
 # Routes
 @app.route('/')
 def home():
-    return render_template('index.html') 
+    return render_template('index.html')  # Default homepage
+
+@app.route('/<html_page>')
+def render_page(html_page):
+    try:
+        return render_template(html_page)  # Dynamically render requested page
+    except:
+        return "Page not found", 404  # Handle missing templates gracefully
 
 @app.route('/auth/signup', methods=['POST'])
 def signup_user():
-    data = request.json
+    data = request.form  # Use request.form instead of request.json for form submission
+
+    if not data or 'email' not in data or 'password' not in data or 'name' not in data:
+        return jsonify({'message': 'Missing required fields'}), 400
+    
+    # Check if the email already exists
+    existing_user = User.query.filter_by(email=data['email']).first()
+    if existing_user:
+        return jsonify({'message': 'Email already exists'}), 400
+
+    # Create new user and save to DB
     new_user = User(name=data['name'], email=data['email'])
     db.session.add(new_user)
     db.session.commit()
@@ -52,10 +74,29 @@ def login_user():
 @app.route('/event/create', methods=['POST'])
 def create_event():
     data = request.json
-    new_event = Event(name=data['name'], created_by=data['user_id'])
+
+    # Check if required fields are present in the request
+    if not data or 'event_name' not in data or 'creator_name' not in data or 'total_people' not in data:
+        return jsonify({'message': 'Missing required fields'}), 400
+
+    # Create a new event with provided data
+    new_event = Event(
+        event_name=data['event_name'],
+        creator_name=data['creator_name'],
+        total_people=data['total_people']
+    )
+
+    # Add the new event to the database and commit
     db.session.add(new_event)
     db.session.commit()
-    return jsonify({'message': 'Event created successfully', 'event_id': new_event.id})
+
+    # for event in Event:
+    #     print(event.event_name)
+    #     print(event.creator_name)
+    #     print(event.total_people)
+
+    # Return a success message with the event ID
+    return jsonify({'message': 'Event created successfully', 'event_id': new_event.id}), 201
 
 @app.route('/expense/add', methods=['POST'])
 def add_expense():

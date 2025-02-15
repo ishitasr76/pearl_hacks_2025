@@ -10,7 +10,57 @@
         Event Planner
     </h1>
     <p>
-        This event planner allows you to track expenses over a group trip to split costs appropriately at the end of the day. 
+        This event planner allows you to track expenses over a group trip so that you can split costs at the end of a trip.<br>
+        Click Here to register your trip <a href = "trip.html"> <button> Create Trip </button> </a>
     </p>
+
+    <h1>
+        Budgeting ChatBot
+    </h1>
+    <p>
+        Tracks if the budget is being overspent and returns notes on proper spending. 
+    </p>
+
+    <!-- Signup form with POST method -->
+    <h1>Signup Form</h1>
+
+    <form id="signup-form">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required><br><br>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br><br>
+
+        <button type="submit">Signup</button>
+    </form>
+
+    <script>
+        document.getElementById("signup-form").addEventListener("submit", function(e) {
+            e.preventDefault(); // Prevent form from submitting the default way
+
+            const formData = new FormData(this); // Get form data
+            
+            fetch("http://127.0.0.1:5000/auth/signup", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === "User created successfully") {
+                    alert("✅ Signup successful!");
+                } else {
+                    alert("⚠️ " + data.message);
+                }
+            })
+            .catch(error => {
+                alert("❌ Signup failed. Please try again.");
+                console.error(error);
+            });
+        });
+    </script>
+
 </body>
 </html>

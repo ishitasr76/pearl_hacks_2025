@@ -10,10 +10,22 @@ function App() {
 
   const handleSignup = async () => {
     try {
-      await axios.post('http://127.0.0.1:5000/auth/signup', { email, password, name: "User" });
+      // Add headers to indicate JSON request
+      await axios.post('http://127.0.0.1:5000/auth/signup', 
+        { 
+          email, 
+          password, 
+          name: "User" 
+        }, 
+        {
+          headers: {
+            'Content-Type': 'application/json' // Ensure the content type is application/json
+          }
+        }
+      );
       alert('Signup successful!');
     } catch (error) {
-      alert('Signup failed');
+      alert('Signup failed: ' + error.message); // Improved error message
     }
   };
 
