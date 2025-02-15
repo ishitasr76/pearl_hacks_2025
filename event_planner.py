@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import os
@@ -31,7 +31,7 @@ class Expense(db.Model):
 # Routes
 @app.route('/')
 def home():
-    return "Welcome to the Event Expense Splitter API!"
+    return render_template('index.html') 
 
 @app.route('/auth/signup', methods=['POST'])
 def signup_user():
