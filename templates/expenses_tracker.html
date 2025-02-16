@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Group Expense Tracker</h1>
+   
+    <form id="expense-form">
+        <label for="name">Your Name:</label>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <label for="description">Expense Description:</label>
+        <input type="text" id="description" name="description" required><br><br>
+
+        <label for="amount">Amount:</label>
+        <input type="number" id="amount" name="amount" required><br><br>
+
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date" required><br><br>
+
+        <button type="submit">Add Expense</button>
+    </form>
+
+    <h2>Expense Summary</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody id="expense-list"></tbody>
+    </table>
+
+    <h3>Total Amount Owed Per Person</h3>
+    <ul id="balances"></ul>
+
+    <script>
+        document.getElementById("expense-form").addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const data = {};
+            formData.forEach((value, key) => { data[key] = value; });
+
+            fetch("http://127.0.0.1:5000/expenses/add", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert("✅ Expense Added Successfully!");
+                loadExpenses();  // Update the list without reloading the page
+            })
+            .catch(error => {
+                alert("❌ Failed to Add Expense");
+                console.error(error);
+            });
+        });
+
+        function loadExpenses() {
+            fetch("http://127.0.0.1:5000/expenses")
+            .then(response => response.json())
+            .then(data => {
+                const expenseList = document.getElementById("expense-list");
+                expenseList.innerHTML = "";
+
+                if (data && data.expenses && data.expenses.length > 0) {
+                    data.expenses.forEach(expense => {
+                        const row = `<tr>
+                            <td>${expense.name}</td>
+                            <td>${expense.description}</td>
+                            <td>${expense.amount}</td>
+                            <td>${expense.date}</td>
+                        </tr>`;
+                        expenseList.innerHTML += row;
+                    });
+                } else {
+                    expenseList.innerHTML = "<tr><td colspan='4'>No expenses added yet.</td></tr>";
+                }
+
+                const balances = document.getElementById("balances");
+                balances.innerHTML = "";
+
+                if (data && data.balances && Object.keys(data.balances).length > 0) {
+                    for (const person in data.balances) {
+                        balances.innerHTML += `<li>${person}: ${data.balances[person]}</li>`;
+                    }
+                } else {
+                    balances.innerHTML = "<li>No balances to show.</li>";
+                }
+    

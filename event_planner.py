@@ -194,24 +194,6 @@ def create_event():
     # Return a success message with the event ID
     return jsonify({'message': 'Event created successfully', 'event_id': new_event.id}), 201
 
-
-@app.route('/trip', methods=['GET'])
-def trip_form():
-    trip_name = request.args.get('trip_name')  # Retrieve the trip name from query parameters
-    if trip_name:
-        # Try to get the trip details from the database
-        trip = Event.query.filter_by(event_name=trip_name).first()
-
-
-        if trip:
-            # Render the 'current_trip.html' template and pass the trip object to it
-            return render_template('current_trip.html', trip=trip)
-        else:
-            return f'Trip with the name "{trip_name}" not found.'
-    else:
-        return 'No trip name provided!'
-
-
 class Expense(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -251,9 +233,20 @@ def get_expenses():
     balances = {}  # This can be a calculation based on your requirements
     return jsonify({'expenses': expenses_list, 'balances': balances})
 
-# if __name__ == '__main__':
-#     app.run(port=5000, debug=True)
+@app.route('/trip', methods=['GET'])
+def trip_form():
+    trip_name = request.args.get('trip_name')  # Retrieve the trip name from query parameters
+    if trip_name:
+        # Try to get the trip details from the database
+        trip = Event.query.filter_by(event_name=trip_name).first()
 
+        if trip:
+            # Render the 'current_trip.html' template and pass the trip object to it
+            return render_template('current_trip.html', trip=trip)
+        else:
+            return f'Trip with the name "{trip_name}" not found.'
+    else:
+        return 'No trip name provided!'
 
 if __name__ == '__main__':
     with app.app_context():
