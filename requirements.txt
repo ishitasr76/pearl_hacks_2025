@@ -3,6 +3,7 @@ click==8.1.8
 Flask==2.2.5
 flask_cors==5.0.0
 flask_sqlalchemy==2.5.1
+SQLAlchemy==1.4.41
 gunicorn==23.0.0
 importlib_metadata==8.6.1
 itsdangerous==2.2.0
