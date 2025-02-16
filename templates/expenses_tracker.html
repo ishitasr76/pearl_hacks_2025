@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Group Expense Tracker</title>
 </head>
 <body>
     <h1>Group Expense Tracker</h1>
    
+    <!-- Expense Form -->
     <form id="expense-form">
         <label for="name">Your Name:</label>
         <input type="text" id="name" name="name" required><br><br>
@@ -24,6 +25,7 @@
         <button type="submit">Add Expense</button>
     </form>
 
+    <!-- Expense Summary Table -->
     <h2>Expense Summary</h2>
     <table border="1">
         <thead>
@@ -34,20 +36,25 @@
                 <th>Date</th>
             </tr>
         </thead>
-        <tbody id="expense-list"></tbody>
+        <tbody id="expense-list">
+            <!-- Expenses will be added here dynamically -->
+        </tbody>
     </table>
 
     <h3>Total Amount Owed Per Person</h3>
     <ul id="balances"></ul>
 
     <script>
+        // Add event listener for the form submit
         document.getElementById("expense-form").addEventListener("submit", function(e) {
             e.preventDefault();
 
+            // Gather form data
             const formData = new FormData(this);
             const data = {};
             formData.forEach((value, key) => { data[key] = value; });
 
+            // Send the data to the backend
             fetch("http://127.0.0.1:5000/expenses/add", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -56,7 +63,7 @@
             .then(response => response.json())
             .then(data => {
                 alert("✅ Expense Added Successfully!");
-                loadExpenses();  // Update the list without reloading the page
+                loadExpenses();  // Reload the expense list after adding the new expense
             })
             .catch(error => {
                 alert("❌ Failed to Add Expense");
@@ -64,14 +71,17 @@
             });
         });
 
+        // Function to load and display expenses from the backend
         function loadExpenses() {
             fetch("http://127.0.0.1:5000/expenses")
             .then(response => response.json())
             .then(data => {
                 const expenseList = document.getElementById("expense-list");
-                expenseList.innerHTML = "";  // Clear the table content before adding new rows
+                expenseList.innerHTML = "";  // Clear the table before adding new rows
 
+                // Check if there are any expenses to display
                 if (data && data.expenses && data.expenses.length > 0) {
+                    // Loop through each expense and add a new row to the table
                     data.expenses.forEach(expense => {
                         const row = `<tr>
                             <td>${expense.name}</td>
@@ -79,12 +89,13 @@
                             <td>${expense.amount}</td>
                             <td>${expense.date}</td>
                         </tr>`;
-                        expenseList.innerHTML += row;  // Append the new row
+                        expenseList.innerHTML += row;  // Append each row to the table
                     });
                 } else {
                     expenseList.innerHTML = "<tr><td colspan='4'>No expenses added yet.</td></tr>";
                 }
 
+                // Display the balances (if available)
                 const balances = document.getElementById("balances");
                 balances.innerHTML = "";
 
@@ -102,7 +113,8 @@
             });
         }
 
-        window.onload = loadExpenses;  // Load expenses when the page is loaded
+        // Load expenses when the page is loaded
+        window.onload = loadExpenses;  
     </script>
 </body>
 </html>
