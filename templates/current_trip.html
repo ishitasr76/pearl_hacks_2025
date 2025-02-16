@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trip Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #FFFFFF, #7BAFD4);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            text-align: center;
+        }
+    
+        .container {
+            background: white;
+            padding: 40px; /* Increased padding */
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 800px; /* Increased width */
+            margin: 20px;
+        }
+    
+        h1 {
+            color: #333;
+        }
+    
+        p {
+            font-size: 18px;
+        }
+    
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+    
+        li {
+            background: #f9f9f9;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    
+        form {
+            margin-top: 10px;
+        }
+    
+        input {
+            padding: 5px;
+            margin-right: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    
+        button {
+            padding: 5px 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    
+        button:hover {
+            background: #0056b3;
+        }
+    
+        /* Group Expense Tracker scrollable container */
+        .expense-container {
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background: white;
+            margin-top: 20px;
+        }
+    
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+    
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+    </style>
+    
+</head>
+<body>
+    <div class="container">
+        <h1>Trip Details</h1>
+
+        {% if trip %}
+        <p><strong>Trip Name:</strong> {{ trip.event_name }}</p>
+        <p><strong>Created By:</strong> {{ trip.creator_name }}</p>
+        <p><strong>Total People:</strong> {{ trip.total_people }}</p>
+
+        <h3>People Attending:</h3>
+        <ul>
+            {% for user in trip.participants %}
+            <li>
+                <strong>{{ user.name }}</strong> - {{ user.email }}
+            </li>
+            {% endfor %}
+        </ul>
+
+        {% else %}
+        <p>No trip details found!</p>
+        {% endif %}
+    </div>
+
+    <script>
+        // Function to clear the form after submission
+        function clearForm() {
+            document.getElementById("trip_name").value = "";  // Clear the input field
+        }
+    </script>
+
+    <div class="container expense-container">
+        <h1>Group Expense Tracker</h1>
+
+        <!-- Expense Form -->
+        <form id="expense-form">
+            <input type="hidden" id="event_id" name="event_id" value="{{ trip.id }}">
+
+            <label for="name">Your Name:</label>
+            <input type="text" id="name" name="name" required><br><br>
+
+            <label for="description">Expense Description:</label>
+            <input type="text" id="description" name="description" required><br><br>
+
+            <label for="amount">Amount:</label>
+            <input type="number" id="amount" name="amount" required><br><br>
+
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date" required><br><br>
+
+            <button type="submit">Add Expense</button>
+        </form>
+
+        <!-- Expense Summary Table -->
+        <h2>Expense Summary</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody id="expense-list">
+                <!-- Expenses will be added here dynamically -->
+            </tbody>
+        </table>
+
+        <ul id="balances"></ul>
+
+        <script>
+            // Add event listener for the form submit
+            document.getElementById("expense-form").addEventListener("submit", function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                const data = {};
+                formData.forEach((value, key) => { data[key] = value; });
+
+                // Include event_id in the request
+                data["event_id"] = document.getElementById("event_id").value;
+
+                fetch("http://127.0.0.1:5000/expenses/add", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert("✅ Expense Added Successfully!");
+                    loadExpenses();  // Reload the expense list after adding the new expense
+                })
+                .catch(error => {
+                    alert("❌ Failed to Add Expense");
+                    console.error(error);
+                });
+            });
+
+            function loadExpenses() {
+                const eventId = document.getElementById("event_id").value;
+                if (!eventId) {
+                    document.getElementById("expense-list").innerHTML = "<tr><td colspan='4'>No trip selected.</td></tr>";
+                    document.getElementById("balances").innerHTML = "<li>No trip selected.</li>";
+                    return;
+                }
+
+                fetch(`http://127.0.0.1:5000/expenses?event_id=${eventId}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Handle expenses table
+                    const expenseList = document.getElementById("expense-list");
+                    expenseList.innerHTML = "";
+
+                    if (data.expenses.length > 0) {
+                        // Render expenses in a table
+                        data.expenses.forEach(expense => {
+                            const row = `<tr>
+                                <td>${expense.name}</td>
+                                <td>${expense.description}</td>
+                                <td>$${expense.amount.toFixed(2)}</td>
+                                <td>${expense.date}</td>
+                            </tr>`;
+                            expenseList.innerHTML += row;
+                        });
+                    } else {
+                        expenseList.innerHTML = "<tr><td colspan='4'>No expenses added yet.</td></tr>";
+                    }
+
+                    // Clear and rebuild the balances section
+                    const balances = document.getElementById("balances");
+                    balances.innerHTML = ""; // Clear previous content
+                    
+                    // Display settlement plan if it exists
+                    if (data.settlements && data.settlements.length > 0) {
+                        balances.innerHTML = "<h3>Settlement Plan</h3>";
+                        balances.innerHTML += "<ul id='settlement-list'>";
+                        
+                        data.settlements.forEach(settlement => {
+                            balances.innerHTML += `<li>${settlement.from} should pay ${settlement.to} $${settlement.amount.toFixed(2)}</li>`;
+                        });
+                        
+                        balances.innerHTML += "</ul>";
+                    } else {
+                        balances.innerHTML = "<p>No settlements needed at this time.</p>";
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert("❌ Failed to load expenses.");
+                });
+            }
+
+            // Load expenses when the page is loaded
+            window.onload = loadExpenses;  
+        </script>
+    </div>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Trip</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #FFFFFF, #7BAFD4);
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        form {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        label {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        input {
+            padding: 10px;
+            width: 90%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        button {
+            padding: 10px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 95%;
+            margin-top: 15px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .person-form {
+            background-color: #f9f9f9;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            width: 90%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Create New Event</h1>
+
+        <form id="event-form">
+            <label for="event_name">Event Name:</label>
+            <input type="text" id="event_name" name="event_name" required>
+
+            <label for="creator_name">Creator Name:</label>
+            <input type="text" id="creator_name" name="creator_name" required>
+
+            <label for="total_people">Total People:</label>
+            <input type="number" id="total_people" name="total_people" required>
+
+            <div id="people-forms-container"></div>
+
+            <button type="submit">Create Event</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('total_people').addEventListener('input', function() {
+            const totalPeople = parseInt(this.value, 10);
+            const container = document.getElementById('people-forms-container');
+            container.innerHTML = '';
+
+            for (let i = 1; i <= totalPeople; i++) {
+                const miniForm = document.createElement('div');
+                miniForm.classList.add('person-form');
+                miniForm.innerHTML = `
+                    <label for="person_${i}_name">Name:</label>
+                    <input type="text" id="person_${i}_name" name="person_${i}_name" required>
+                    
+                    <label for="person_${i}_email">Email:</label>
+                    <input type="email" id="person_${i}_email" name="person_${i}_email" required>
+                `;
+                container.appendChild(miniForm);
+            }
+        });
+
+        document.getElementById("event-form").addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const data = {};
+
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+
+            const totalPeople = parseInt(data['total_people'], 10);
+            const attendees = [];
+            for (let i = 1; i <= totalPeople; i++) {
+                attendees.push({
+                    name: data[`person_${i}_name`],
+                    email: data[`person_${i}_email`]
+                });
+            }
+
+            fetch("http://127.0.0.1:5000/event/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    ...data,
+                    attendees
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                if (data.message === "Event created successfully") {
+                    window.location.href = '/dashboard.html';
+                }
+            })
+            .catch(error => {
+                alert("❌ Event creation failed. Please try again.");
+                console.error(error);
+            });
+        });
+    </script>
+
+</body>
+</html>

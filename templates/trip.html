@@ -1,4 +1,4 @@
-<!-- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,28 +8,29 @@
 <body>
     <h1>Create New Event</h1>
 
+
     <form id="event-form">
         <label for="event_name">Event Name:</label>
         <input type="text" id="event_name" name="event_name" required><br><br>
-    
+   
         <label for="creator_name">Creator Name:</label>
         <input type="text" id="creator_name" name="creator_name" required><br><br>
-    
+   
         <label for="total_people">Total Number of People Joining:</label>
         <input type="number" id="total_people" name="total_people" required><br><br>
-    
+   
         <div id="people-forms-container"></div> <!-- This is where mini forms will appear -->
-    
-        <!-- <button type="submit">Create Event</button>
+   
+        <button type="submit">Create Event</button>
     </form>
-     -->
-    <!-- <script>
+   
+    <script>
         // Function to generate mini forms for attendees based on total_people input
         document.getElementById('total_people').addEventListener('input', function() {
             const totalPeople = parseInt(this.value, 10);
             const container = document.getElementById('people-forms-container');
             container.innerHTML = ''; // Clear previous mini forms
-    
+   
             // Generate mini forms for each person
             for (let i = 1; i <= totalPeople; i++) {
                 const miniForm = document.createElement('div');
@@ -38,26 +39,29 @@
                     <h3>Person ${i}</h3>
                     <label for="person_${i}_name">Name:</label>
                     <input type="text" id="person_${i}_name" name="person_${i}_name" required><br><br>
-                    
+                   
                     <label for="person_${i}_email">Email:</label>
                     <input type="email" id="person_${i}_email" name="person_${i}_email" required><br><br>
                 `;
                 container.appendChild(miniForm);
             }
         });
-    
+   
         // Handle the form submission
         document.getElementById("event-form").addEventListener("submit", function(e) {
             e.preventDefault(); // Prevent form from submitting the default way
-    
+
+
             const formData = new FormData(this); // Get form data
             const data = {};
-    
+
+
             // Convert FormData to a plain object
             formData.forEach((value, key) => {
                 data[key] = value;
             });
-    
+
+
             // Collect the attendees' names and emails
             const totalPeople = parseInt(data['total_people'], 10);
             const attendees = [];
@@ -68,7 +72,8 @@
                     attendees.push({name: personName, email: personEmail}); // Add name and email to attendees list
                 }
             }
-    
+
+
             // Send POST request with JSON payload
             fetch("http://127.0.0.1:5000/event/create", {
                 method: "POST",
@@ -76,7 +81,9 @@
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    ...data,  // Include main form data
+                    event_name: data['event_name'],  // Include main form data
+                    creator_name: data['creator_name'],
+                    total_people: data['total_people'],
                     attendees: attendees  // Add attendees' names and emails to the data
                 })
             })
@@ -84,7 +91,7 @@
             .then(data => {
                 if (data.message === "Event created successfully") {
                     alert("✅ Event created successfully!");
-                    window.location.href = '/';  // Redirect to the homepage
+                    window.location.href = 'trip.html';  // Redirect to the homepage
                 } else {
                     alert("⚠️ " + data.message);
                 }
@@ -94,7 +101,6 @@
                 console.error(error);
             });
         });
-    </script> -->
-<!-- </body>
-</html> --> -->
-
+    </script>
+</body>
+</html>
