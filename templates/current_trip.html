@@ -7,7 +7,6 @@
 </head>
 <body>
     <h1>Trip Details</h1>
-    
     {% if trip %}
     <p><strong>Trip Name:</strong> {{ trip.event_name }}</p>
     <p><strong>Created By:</strong> {{ trip.creator_name }}</p>
@@ -15,18 +14,21 @@
 
     <h3>People Attending:</h3>
     <ul>
-        {% for user in trip.users %}
+        {% for user in trip.participants %}
             <li>{{ user.name }} - {{ user.email }} - 
-                <form action="/trip" method="GET">
+                <!-- <form action="/validate_password" method="POST">
                     <label for="tripID">Enter your password:</label>
                     <input type="text" name="trip_name" placeholder="password" required>
                     <button type="submit">Submit</button>
-                </form>
+                </form> -->
+                <a href = "personal_expenses.html">
+                    <button> Add expense </button>
+                </a>
             </li>
         {% endfor %}
     </ul>
 {% else %}
-    <p>No trip details found!</p>
+    <p>No trip found with the provided name.</p>
 {% endif %}
 
 </body>

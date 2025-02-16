@@ -6,6 +6,7 @@ import os
 
 app = Flask(__name__)
 
+
 CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///expenses.db'  # Use PostgreSQL in production
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -24,10 +25,10 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)  # Store hashed password
+    password = db.Column(db.String(200), nullable=True)  # Store hashed password
 
     # Many-to-Many Relationship with Event
-    events = db.relationship('Event', secondary=user_event, backref=db.backref('participants', lazy='dynamic'))
+    # events = db.relationship('Event', secondary=user_event, backref=db.backref('participants', lazy='dynamic'))
 
 # Event Model
 class Event(db.Model):
@@ -36,6 +37,28 @@ class Event(db.Model):
     event_name = db.Column(db.String(100), nullable=False, unique=True)
     creator_name = db.Column(db.String(100), nullable=False)
     total_people = db.Column(db.Integer, nullable=False)
+
+    # Many-to-many relationship with the User class
+    participants = db.relationship('User', secondary=user_event, backref=db.backref('events', lazy='dynamic'))
+
+    # Optional: Function to add a user to the event
+    def add_participant(self, user):
+        if user not in self.participants:
+            self.participants.append(user)
+            db.session.commit()
+
+    # Optional: Function to remove a user from the event
+    def remove_participant(self, user):
+        if user in self.participants:
+            self.participants.remove(user)
+            db.session.commit()
+
+    # Optionally add a method to handle logic for counting participants
+    def update_total_people(self):
+        self.total_people = len(self.participants)
+        db.session.commit()
+
+
 
 class Expense(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -137,7 +160,7 @@ def create_event():
         attendees.append(user)
 
     # Associate the attendees with the event (many-to-many relationship)
-    new_event.participants.extend(attendees)
+    new_event.participants.extend(attendees)  # Use the `participants` relationship to add attendees
 
     # Add the new event to the database and commit
     db.session.add(new_event)
@@ -145,6 +168,7 @@ def create_event():
 
     # Return a success message with the event ID
     return jsonify({'message': 'Event created successfully', 'event_id': new_event.id}), 201
+
 
 
 @app.route('/expense/add', methods=['POST'])
@@ -175,6 +199,8 @@ def trip_form():
             return f'Trip with the name "{trip_name}" not found.'
     else:
         return 'No trip name provided!'
+    
+
 
 
 if __name__ == '__main__':
