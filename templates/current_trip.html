@@ -135,51 +135,59 @@
             </tbody>
         </table>
     
-        <h3>Total Amount Owed Per Person</h3>
+        <!-- <h3>Total Amount Each Person Paid</h3> -->
         <ul id="balances"></ul>
     
         <script>
             // Add event listener for the form submit
             document.getElementById("expense-form").addEventListener("submit", function(e) {
-    e.preventDefault();
-
-    const formData = new FormData(this);
-    const data = {};
-    formData.forEach((value, key) => { data[key] = value; });
-
-    // Include event_id in the request
-    data["event_id"] = document.getElementById("event_id").value;
-
-    fetch("http://127.0.0.1:5000/expenses/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert("✅ Expense Added Successfully!");
-        loadExpenses();  // Reload the expense list after adding the new expense
-    })
-    .catch(error => {
-        alert("❌ Failed to Add Expense");
-        console.error(error);
-    });
-});
-
-function loadExpenses() {
+                e.preventDefault();
+        
+                const formData = new FormData(this);
+                const data = {};
+                formData.forEach((value, key) => { data[key] = value; });
+        
+                // Include event_id in the request
+                data["event_id"] = document.getElementById("event_id").value;
+        
+                fetch("http://127.0.0.1:5000/expenses/add", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert("✅ Expense Added Successfully!");
+                    loadExpenses();  // Reload the expense list after adding the new expense
+                })
+                .catch(error => {
+                    alert("❌ Failed to Add Expense");
+                    console.error(error);
+                });
+            });
+        
+            function loadExpenses() {
     const eventId = document.getElementById("event_id").value;
+    if (!eventId) {
+        document.getElementById("expense-list").innerHTML = "<tr><td colspan='4'>No trip selected.</td></tr>";
+        document.getElementById("balances").innerHTML = "<li>No trip selected.</li>";
+        return;
+    }
+
     fetch(`http://127.0.0.1:5000/expenses?event_id=${eventId}`)
     .then(response => response.json())
     .then(data => {
+        // Handle expenses table
         const expenseList = document.getElementById("expense-list");
         expenseList.innerHTML = "";
 
         if (data.expenses.length > 0) {
+            // Render expenses in a table
             data.expenses.forEach(expense => {
                 const row = `<tr>
                     <td>${expense.name}</td>
                     <td>${expense.description}</td>
-                    <td>${expense.amount}</td>
+                    <td>$${expense.amount.toFixed(2)}</td>
                     <td>${expense.date}</td>
                 </tr>`;
                 expenseList.innerHTML += row;
@@ -188,15 +196,22 @@ function loadExpenses() {
             expenseList.innerHTML = "<tr><td colspan='4'>No expenses added yet.</td></tr>";
         }
 
+        // Clear and rebuild the balances section
         const balances = document.getElementById("balances");
-        balances.innerHTML = "";
-
-        if (Object.keys(data.balances).length > 0) {
-            for (const person in data.balances) {
-                balances.innerHTML += `<li>${person}: ${data.balances[person]}</li>`;
-            }
+        balances.innerHTML = ""; // Clear previous content
+        
+        // Display settlement plan if it exists
+        if (data.settlements && data.settlements.length > 0) {
+            balances.innerHTML = "<h3>Settlement Plan</h3>";
+            balances.innerHTML += "<ul id='settlement-list'>";
+            
+            data.settlements.forEach(settlement => {
+                balances.innerHTML += `<li>${settlement.from} should pay ${settlement.to} $${settlement.amount.toFixed(2)}</li>`;
+            });
+            
+            balances.innerHTML += "</ul>";
         } else {
-            balances.innerHTML = "<li>No balances to show.</li>";
+            balances.innerHTML = "<p>No settlements needed at this time.</p>";
         }
     })
     .catch(error => {
@@ -204,10 +219,11 @@ function loadExpenses() {
         alert("❌ Failed to load expenses.");
     });
 }
-
+ 
             // Load expenses when the page is loaded
             window.onload = loadExpenses;  
         </script>
+        
 
     </div>
     

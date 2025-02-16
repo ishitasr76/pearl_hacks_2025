@@ -141,16 +141,37 @@ def add_expense():
     data = request.json
     if 'event_id' not in data:
         return jsonify({'message': 'Missing event_id'}), 400
-
+    
+    event_id = data['event_id']
+    name = data['name']
+    
+    # Get the event and check if it exists
+    event = Event.query.get(event_id)
+    if not event:
+        return jsonify({'message': 'Event not found'}), 404
+    
+    # Check if the person adding the expense is a participant in the event
+    is_participant = False
+    for participant in event.participants:
+        if participant.name == name:
+            is_participant = True
+            break
+    
+    if not is_participant:
+        return jsonify({'message': 'Only event participants can add expenses'}), 403
+    
+    # If validation passes, create the expense
     expense = Expense(
         name=data['name'],
         description=data['description'],
-        amount=data['amount'],
+        amount=float(data['amount']),
         date=data['date'],
-        event_id=data['event_id']  # Assign the expense to a trip
+        event_id=data['event_id']
     )
+    
     db.session.add(expense)
     db.session.commit()
+    
     return jsonify({'message': 'Expense added successfully'}), 201
 
 
@@ -160,25 +181,91 @@ def get_expenses():
     if not event_id:
         return jsonify({'message': 'Missing event_id'}), 400
 
+    event = Event.query.get(event_id)
+    if not event:
+        return jsonify({'message': 'Event not found'}), 404
+
     expenses = Expense.query.filter_by(event_id=event_id).all()
-    expenses_list = []
-    balances = {}
-
+    
+    # Get all participants
+    participants = {user.name: 0 for user in event.participants}
+    
+    # Initialize balance tracking - this tracks how much each person has actually paid
+    paid_amounts = {name: 0 for name in participants}
+    
+    # Calculate the total expense and update who paid what
+    total_expense = 0
     for expense in expenses:
-        expenses_list.append({
-            'name': expense.name,
-            'description': expense.description,
-            'amount': expense.amount,
-            'date': expense.date
-        })
-
-        # Update balances dictionary
-        if expense.name in balances:
-            balances[expense.name] += expense.amount
-        else:
-            balances[expense.name] = expense.amount
-
-    return jsonify({'expenses': expenses_list, 'balances': balances})
+        total_expense += expense.amount
+        # Add the expense amount to what this person has paid
+        if expense.name in paid_amounts:
+            paid_amounts[expense.name] += expense.amount
+    
+    # Calculate each person's fair share
+    num_participants = len(participants)
+    if num_participants == 0:
+        return jsonify({'message': 'No participants in the event'}), 400
+    
+    share_per_person = total_expense / num_participants
+    
+    # Calculate final debt (negative means they owe money, positive means they're owed money)
+    debt = {}
+    for person in participants:
+        # What they paid minus what they should have paid
+        debt[person] = round(paid_amounts.get(person, 0) - share_per_person, 2)
+    
+    # Calculate who owes who
+    settlements = []
+    debtors = [(person, amount) for person, amount in debt.items() if amount < 0]
+    creditors = [(person, amount) for person, amount in debt.items() if amount > 0]
+    
+    # Sort by absolute amount (largest debt/credit first)
+    debtors.sort(key=lambda x: x[1])  # Already negative, so this puts largest debt first
+    creditors.sort(key=lambda x: x[1], reverse=True)  # Largest credit first
+    
+    # Match debtors with creditors
+    debtor_idx = 0
+    creditor_idx = 0
+    
+    while debtor_idx < len(debtors) and creditor_idx < len(creditors):
+        debtor, debt_amount = debtors[debtor_idx]
+        creditor, credit_amount = creditors[creditor_idx]
+        
+        # The amount to transfer is the minimum of the debt and credit
+        transfer_amount = min(abs(debt_amount), credit_amount)
+        
+        if transfer_amount > 0:
+            settlements.append({
+                "from": debtor,
+                "to": creditor,
+                "amount": round(transfer_amount, 2)
+            })
+        
+        # Update remaining amounts
+        debtors[debtor_idx] = (debtor, debt_amount + transfer_amount)
+        creditors[creditor_idx] = (creditor, credit_amount - transfer_amount)
+        
+        # Move to next person if their debt/credit has been fully handled
+        if abs(debtors[debtor_idx][1]) < 0.01:  # Using 0.01 to handle floating point errors
+            debtor_idx += 1
+        if abs(creditors[creditor_idx][1]) < 0.01:
+            creditor_idx += 1
+    
+    expenses_list = [{
+        'name': expense.name,
+        'description': expense.description,
+        'amount': expense.amount,
+        'date': expense.date
+    } for expense in expenses]
+    
+    return jsonify({
+        'expenses': expenses_list, 
+        'debt': debt,
+        'settlements': settlements,
+        'total_people': num_participants,
+        'total_expense': total_expense,
+        'share_per_person': round(share_per_person, 2)
+    })
 
 
 
