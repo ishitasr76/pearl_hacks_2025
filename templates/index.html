@@ -4,27 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Group Expenses Planner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: url('https://img.freepik.com/free-photo/border-from-stationeries_23-2147689773.jpg?t=st=1739681933~exp=1739685533~hmac=e0a2cffab3982c433a81ba8f3b0a2c95694a1b344953767d1fb88270e10cecee&w=2000');
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        p {
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 95%;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        a {
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
-    <h1>
-        Event Planner
-    </h1>
-    <p>
-        This event planner allows you to track expenses over a group trip so that you can split costs at the end of a trip.<br>
-        Are you a new user? To create a new account, click here <a href = "create.html"> <button> Create Account </button> </a> <br>
-        Are you an existing user? <a href = "login.html"> <button> Login </button> </a> <br>
-        <a href = "expenses_tracker.html"> <button> expense </button> </a> <br>
-       
-    </p>
-
-
-    <h1>
-        Budgeting ChatBot
-    </h1>
-    <p>
-        Tracks if the budget is being overspent and returns notes on proper spending.
-    </p>
-
-
+    <div class="container">
+        <h1>Event Planner</h1>
+        <p>This event planner allows you to track expenses over a group trip so that you can split costs at the end of a trip.</p>
+        
+        <a href="create.html"><button>Create Account</button></a>
+        <a href="login.html"><button>Login</button></a>
+        <a href="expenses_tracker.html"><button>Track Expenses</button></a>
+    </div>
+    
+    <div class="container" style="margin-top: 20px;">
+        <h1>Budgeting ChatBot</h1>
+        <p>Tracks if the budget is being overspent and returns notes on proper spending.</p>
+    </div>
 </body>
 </html>

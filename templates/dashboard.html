@@ -5,83 +5,79 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trip Planner</title>
     <style>
-        <style>
-    html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #FFFFFF, #7BAFD4);
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
 
-    body {
-        font-family: Arial, sans-serif;
-        background: linear-gradient(to right, #FFFFFF, #FFFFFF);
-        color: black;
-        text-align: center;
-    }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: auto;
+        }
 
-    .container {
-        background: rgba(255, 255, 255, 0.9); /* Slightly less transparency */
-        padding: 30px;
-        border-radius: 15px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        width: 350px;
-        max-width: 90%;  /* Ensures the container doesn’t overflow on smaller screens */
-        box-sizing: border-box;  /* Ensures padding is included in width calculation */
-    }
+        h1 {
+            color: #333;
+        }
 
-    h1 {
-        font-size: 24px;
-        margin-bottom: 15px;
-    }
+        p {
+            font-size: 16px;
+        }
 
-    a button {
-        background: #ff7e5f;
-        border: none;
-        padding: 12px 20px;
-        color: white;
-        font-size: 16px;
-        cursor: pointer;
-        border-radius: 8px;
-        transition: 0.3s;
-    }
+        form {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-    a button:hover {
-        background: #ff4b2b;
-    }
+        label {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
 
-    form {
-        margin-top: 20px;
-    }
+        input {
+            padding: 10px;
+            width: 90%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 5px;
+            text-align: center;
+        }
 
-    input {
-        padding: 10px;
-        width: 80%;
-        border: none;
-        border-radius: 5px;
-        margin-top: 5px;
-        font-size: 14px;
-    }
+        button {
+            padding: 10px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 95%;
+            margin-top: 15px;
+            transition: 0.3s;
+        }
 
-    button {
-        background: #45a049;
-        color: white;
-        padding: 10px 15px;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        cursor: pointer;
-        transition: 0.3s;
-        margin-top: 10px;
-    }
+        button:hover {
+            background: #0056b3;
+        }
 
-    button:hover {
-        background: #379537;
-    }
-</style>
+        a button {
+            background: #ff7e5f;
+        }
+
+        a button:hover {
+            background: #ff4b2b;
+        }
+    </style>
 </head>
 <body>
 
@@ -91,9 +87,8 @@
         <a href="make_trip.html"><button>Register Your Trip</button></a>
 
         <form action="/trip" method="GET">
-            <label for="tripID">Find a Trip:</label><br>
+            <label for="tripID">Find a Trip:</label>
             <input type="text" name="trip_name" placeholder="Enter trip name" required>
-            <br>
             <button type="submit">Search Trip</button>
         </form>
     </div>

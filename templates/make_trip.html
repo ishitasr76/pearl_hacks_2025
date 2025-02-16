@@ -7,67 +7,63 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f7fc;
+            background: linear-gradient(to right, #FFFFFF, #7BAFD4);
             margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            padding: 20px;
+            text-align: center;
         }
 
         .container {
-            background-color: #ffffff;
-            padding: 30px;
+            background: white;
+            padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 600px;
-            max-height: 80vh; /* Limits height */
-            overflow-y: auto; /* Enables vertical scrolling */
-            overflow-x: hidden; /* Prevents horizontal scrolling */
+            max-width: 400px;
+            margin: auto;
         }
 
         h1 {
-            color: #0085CA;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        label {
-            font-size: 1rem;
             color: #333;
         }
 
-        input[type="text"], input[type="email"], input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-            font-size: 1rem;
+        form {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        input[type="text"]:focus, input[type="email"]:focus, input[type="number"]:focus {
-            border-color: #0085CA;
-            outline: none;
+        label {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        input {
+            padding: 10px;
+            width: 90%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 5px;
+            text-align: center;
         }
 
         button {
-            background-color: #0085CA;
+            padding: 10px 15px;
+            background: #007bff;
             color: white;
-            padding: 12px 20px;
             border: none;
             border-radius: 5px;
+            font-size: 16px;
             cursor: pointer;
-            font-size: 1rem;
-            width: 100%;
-            transition: background-color 0.3s;
+            width: 95%;
+            margin-top: 15px;
+            transition: 0.3s;
         }
 
         button:hover {
-            background-color: #0085CA;
+            background: #0056b3;
         }
 
         .person-form {
@@ -75,25 +71,8 @@
             padding: 15px;
             margin: 10px 0;
             border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 90%;
         }
-
-        .person-form h3 {
-            color: #0085CA;
-            margin-bottom: 15px;
-        }
-
-        .form-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .form-footer button {
-            width: auto;
-            margin-top: 20px;
-        }
-
     </style>
 </head>
 <body>
@@ -108,14 +87,12 @@
             <label for="creator_name">Creator Name:</label>
             <input type="text" id="creator_name" name="creator_name" required>
 
-            <label for="total_people">Total Number of People Joining:</label>
+            <label for="total_people">Total People:</label>
             <input type="number" id="total_people" name="total_people" required>
 
-            <div id="people-forms-container"></div> <!-- Mini forms for people -->
+            <div id="people-forms-container"></div>
 
-            <div class="form-footer">
-                <button type="submit">Create Event</button>
-            </div>
+            <button type="submit">Create Event</button>
         </form>
     </div>
 
@@ -123,17 +100,15 @@
         document.getElementById('total_people').addEventListener('input', function() {
             const totalPeople = parseInt(this.value, 10);
             const container = document.getElementById('people-forms-container');
-            container.innerHTML = ''; // Clear previous mini forms
+            container.innerHTML = '';
 
-            // Generate mini forms for each person
             for (let i = 1; i <= totalPeople; i++) {
                 const miniForm = document.createElement('div');
                 miniForm.classList.add('person-form');
                 miniForm.innerHTML = `
-                    <h3>Person ${i}</h3>
                     <label for="person_${i}_name">Name:</label>
                     <input type="text" id="person_${i}_name" name="person_${i}_name" required>
-
+                    
                     <label for="person_${i}_email">Email:</label>
                     <input type="email" id="person_${i}_email" name="person_${i}_email" required>
                 `;
@@ -154,30 +129,25 @@
             const totalPeople = parseInt(data['total_people'], 10);
             const attendees = [];
             for (let i = 1; i <= totalPeople; i++) {
-                const personName = data[`person_${i}_name`];
-                const personEmail = data[`person_${i}_email`];
-                if (personName && personEmail) {
-                    attendees.push({name: personName, email: personEmail});
-                }
+                attendees.push({
+                    name: data[`person_${i}_name`],
+                    email: data[`person_${i}_email`]
+                });
             }
 
             fetch("http://127.0.0.1:5000/event/create", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     ...data,
-                    attendees: attendees
+                    attendees
                 })
             })
             .then(response => response.json())
             .then(data => {
+                alert(data.message);
                 if (data.message === "Event created successfully") {
-                    alert("✅ Event created successfully!");
                     window.location.href = '/dashboard.html';
-                } else {
-                    alert("⚠️ " + data.message);
                 }
             })
             .catch(error => {
@@ -189,175 +159,3 @@
 
 </body>
 </html>
-
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Budget Planner</title>
-</head>
-<body>
-    <h1>Budget Planner</h1>
-
-    <div id="pie-chart-container">
-        <h2>Event Expense Breakdown</h2>
-        <img id="pie-chart" src="" alt="Expense Pie Chart">
-    </div>
-
-    <script>
-        // // Function to fetch the pie chart
-        // function fetchPieChart(eventId) {
-        //     fetch(`/budget/pie_chart/${eventId}`)
-        //         .then(response => response.json())
-        //         .then(data => {
-        //             if (data.pie_chart) {
-        //                 document.getElementById('pie-chart').src = `data:image/png;base64,${data.pie_chart}`;
-        //             } else {
-        //                 alert("No data found for the given event.");
-        //             }
-        //         })
-        //         .catch(error => console.error('Error fetching pie chart:', error));
-        // }
-
-        // // Call this function with the actual event ID (for example, 1)
-        // fetchPieChart(1);
-
-//         function fetchPieChart(eventId) {
-//     fetch(`/budget/pie_chart/${eventId}`)
-//         .then(response => response.json())
-//         .then(data => {
-//             if (data.pie_chart) {
-//                 document.getElementById('pie-chart').src = `data:image/png;base64,${data.pie_chart}`;
-//             } else {
-//                 alert("No data found for the given event.");
-//             }
-//         })
-//         .catch(error => console.error('Error fetching pie chart:', error));
-// }
-
-    </script>
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Collaborative Expense Splitter</title>
- </head>
- <body>
-    <h1>Group Expense Tracker</h1>
-   
-    <form id="expense-form">
-        <label for="name">Your Name:</label>
-        <input type="text" id="name" name="name" required><br><br>
- 
- 
-        <label for="description">Expense Description:</label>
-        <input type="text" id="description" name="description" required><br><br>
- 
- 
-        <label for="amount">Amount:</label>
-        <input type="number" id="amount" name="amount" required><br><br>
- 
- 
-        <label for="date">Date:</label>
-        <input type="date" id="date" name="date" required><br><br>
- 
- 
-        <button type="submit">Add Expense</button>
-    </form>
- 
- 
-    <h2>Expense Summary</h2>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Amount</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody id="expense-list"></tbody>
-    </table>
- 
- 
-    <h3>Total Amount Owed Per Person</h3>
-    <ul id="balances"></ul>
- 
- 
-    <script>
-        document.getElementById("expense-form").addEventListener("submit", function(e) {
-            e.preventDefault();
- 
- 
-            const formData = new FormData(this);
-            const data = {};
-            formData.forEach((value, key) => { data[key] = value; });
- 
- 
-            fetch("http://127.0.0.1:5000/expenses/add", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert("✅ Expense Added Successfully!");
-                loadExpenses();  // Update the list without reloading the page
-            })
-            .catch(error => {
-                alert("❌ Failed to Add Expense");
-                console.error(error);
-            });
-        });
- 
- 
-        function loadExpenses() {
-            fetch("http://127.0.0.1:5000/expenses")
-            .then(response => response.json())
-            .then(data => {
-                const expenseList = document.getElementById("expense-list");
-                expenseList.innerHTML = "";
- 
- 
-                if (data.expenses && data.expenses.length > 0) {
-                    data.expenses.forEach(expense => {
-                        const row = `<tr>
-                            <td>${expense.name}</td>
-                            <td>${expense.description}</td>
-                            <td>${expense.amount}</td>
-                            <td>${expense.date}</td>
-                        </tr>`;
-                        expenseList.innerHTML += row;
-                    });
-                } else {
-                    expenseList.innerHTML = "<tr><td colspan='4'>No expenses added yet.</td></tr>";
-                }
- 
- 
-                const balances = document.getElementById("balances");
-                balances.innerHTML = "";
- 
- 
-                if (data.balances && Object.keys(data.balances).length > 0) {
-                    for (const person in data.balances) {
-                        balances.innerHTML += `<li>${person}: ${data.balances[person]}</li>`;
-                    }
-                } else {
-                    balances.innerHTML = "<li>No balances to show.</li>";
-                }
-            })
-            .catch(error => {
-                console.error(error);
-                alert("❌ Failed to load expenses.");
-            });
-        }
- 
- 
-        window.onload = loadExpenses;
-    </script>
- </body>
- </html>
-
-</body>
-</html> -->
