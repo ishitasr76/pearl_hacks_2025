@@ -54,6 +54,8 @@ class Expense(db.Model):
     description = db.Column(db.String(255), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     date = db.Column(db.String(100), nullable=False)
+    event_id = db.Column(db.Integer, db.ForeignKey('event.id'), nullable=False)
+
 
 # Drop and recreate all tables in the database (only for development)
 with app.app_context():
@@ -137,20 +139,31 @@ def create_event():
 @app.route('/expenses/add', methods=['POST'])
 def add_expense():
     data = request.json
+    if 'event_id' not in data:
+        return jsonify({'message': 'Missing event_id'}), 400
+
     expense = Expense(
         name=data['name'],
         description=data['description'],
         amount=data['amount'],
-        date=data['date']
+        date=data['date'],
+        event_id=data['event_id']  # Assign the expense to a trip
     )
     db.session.add(expense)
     db.session.commit()
     return jsonify({'message': 'Expense added successfully'}), 201
 
+
 @app.route('/expenses', methods=['GET'])
 def get_expenses():
-    expenses = Expense.query.all()
+    event_id = request.args.get('event_id')
+    if not event_id:
+        return jsonify({'message': 'Missing event_id'}), 400
+
+    expenses = Expense.query.filter_by(event_id=event_id).all()
     expenses_list = []
+    balances = {}
+
     for expense in expenses:
         expenses_list.append({
             'name': expense.name,
@@ -158,7 +171,16 @@ def get_expenses():
             'amount': expense.amount,
             'date': expense.date
         })
-    return jsonify({'expenses': expenses_list})
+
+        # Update balances dictionary
+        if expense.name in balances:
+            balances[expense.name] += expense.amount
+        else:
+            balances[expense.name] = expense.amount
+
+    return jsonify({'expenses': expenses_list, 'balances': balances})
+
+
 
 @app.route('/trip', methods=['GET'])
 def trip_form():

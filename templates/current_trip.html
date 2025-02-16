@@ -76,11 +76,11 @@
     {% for user in trip.participants %}
         <li>
             <strong>{{ user.name }}</strong> - {{ user.email }}
-            <form action="/trip" method="GET">
+            <!-- <form action="/trip" method="GET">
                 <label for="trip_name">Enter your password:</label>
                 <input type="password" name="trip_name" placeholder="Password" required>
                 <button type="submit">Submit</button>
-            </form>
+            </form> -->
         </li>
     {% endfor %}
 </ul>
@@ -100,6 +100,8 @@
    
         <!-- Expense Form -->
         <form id="expense-form">
+            <input type="hidden" id="event_id" name="event_id" value="{{ trip.id }}">
+
             <label for="name">Your Name:</label>
             <input type="text" id="name" name="name" required><br><br>
     
@@ -137,73 +139,70 @@
         <script>
             // Add event listener for the form submit
             document.getElementById("expense-form").addEventListener("submit", function(e) {
-                e.preventDefault();
-    
-                // Gather form data
-                const formData = new FormData(this);
-                const data = {};
-                formData.forEach((value, key) => { data[key] = value; });
-    
-                // Send the data to the backend
-                fetch("http://127.0.0.1:5000/expenses/add", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(data)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    alert("✅ Expense Added Successfully!");
-                    loadExpenses();  // Reload the expense list after adding the new expense
-                })
-                .catch(error => {
-                    alert("❌ Failed to Add Expense");
-                    console.error(error);
-                });
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const data = {};
+    formData.forEach((value, key) => { data[key] = value; });
+
+    // Include event_id in the request
+    data["event_id"] = document.getElementById("event_id").value;
+
+    fetch("http://127.0.0.1:5000/expenses/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert("✅ Expense Added Successfully!");
+        loadExpenses();  // Reload the expense list after adding the new expense
+    })
+    .catch(error => {
+        alert("❌ Failed to Add Expense");
+        console.error(error);
+    });
+});
+
+function loadExpenses() {
+    const eventId = document.getElementById("event_id").value;
+    fetch(`http://127.0.0.1:5000/expenses?event_id=${eventId}`)
+    .then(response => response.json())
+    .then(data => {
+        const expenseList = document.getElementById("expense-list");
+        expenseList.innerHTML = "";
+
+        if (data.expenses.length > 0) {
+            data.expenses.forEach(expense => {
+                const row = `<tr>
+                    <td>${expense.name}</td>
+                    <td>${expense.description}</td>
+                    <td>${expense.amount}</td>
+                    <td>${expense.date}</td>
+                </tr>`;
+                expenseList.innerHTML += row;
             });
-    
-            // Function to load and display expenses from the backend
-            function loadExpenses() {
-                fetch("http://127.0.0.1:5000/expenses")
-                .then(response => response.json())
-                .then(data => {
-                    const expenseList = document.getElementById("expense-list");
-                    expenseList.innerHTML = "";  // Clear the table before adding new rows
-    
-                    // Check if there are any expenses to display
-                    if (data && data.expenses && data.expenses.length > 0) {
-                        // Loop through each expense and add a new row to the table
-                        data.expenses.forEach(expense => {
-                            const row = `<tr>
-                                <td>${expense.name}</td>
-                                <td>${expense.description}</td>
-                                <td>${expense.amount}</td>
-                                <td>${expense.date}</td>
-                            </tr>`;
-                            expenseList.innerHTML += row;  // Append each row to the table
-                        });
-                    } else {
-                        expenseList.innerHTML = "<tr><td colspan='4'>No expenses added yet.</td></tr>";
-                    }
-    
-                //     // Display the balances (if available)
-                //     const balances = document.getElementById("balances");
-                //     balances.innerHTML = "";
-    
-                //     if (data && data.balances && Object.keys(data.balances).length > 0) {
-                //         for (const person in data.balances) {
-                //             balances.innerHTML += `<li>${person}: ${data.balances[person]}</li>`;
-                //         }
-                //     } else {
-                //         balances.innerHTML += `<li>${person}: ${data.balances[person]}</li>`;
-                //         balances.innerHTML = "<li>No balances to show.</li>";
-                //     }
-                // })
-                // .catch(error => {
-                //     console.error(error);
-                //     alert("❌ Failed to load expenses.");
-                // });
+        } else {
+            expenseList.innerHTML = "<tr><td colspan='4'>No expenses added yet.</td></tr>";
+        }
+
+        const balances = document.getElementById("balances");
+        balances.innerHTML = "";
+
+        if (Object.keys(data.balances).length > 0) {
+            for (const person in data.balances) {
+                balances.innerHTML += `<li>${person}: ${data.balances[person]}</li>`;
             }
-    
+        } else {
+            balances.innerHTML = "<li>No balances to show.</li>";
+        }
+    })
+    .catch(error => {
+        console.error(error);
+        alert("❌ Failed to load expenses.");
+    });
+}
+
             // Load expenses when the page is loaded
             window.onload = loadExpenses;  
         </script>
