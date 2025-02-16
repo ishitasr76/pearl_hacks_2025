@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Current Trip Details</title>
+</head>
+<body>
+    <h1>Trip Details</h1>
+    
+    {% if trip %}
+    <p><strong>Trip Name:</strong> {{ trip.event_name }}</p>
+    <p><strong>Created By:</strong> {{ trip.creator_name }}</p>
+    <p><strong>Total People:</strong> {{ trip.total_people }}</p>
+
+    <h3>People Attending:</h3>
+    <ul>
+        {% for user in trip.users %}
+            <li>{{ user.name }} - {{ user.email }} - 
+                <form action="/trip" method="GET">
+                    <label for="tripID">Enter your password:</label>
+                    <input type="text" name="trip_name" placeholder="password" required>
+                    <button type="submit">Submit</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No trip details found!</p>
+{% endif %}
+
+</body>
+</html>
