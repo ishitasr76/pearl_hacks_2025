@@ -69,7 +69,7 @@
             .then(response => response.json())
             .then(data => {
                 const expenseList = document.getElementById("expense-list");
-                expenseList.innerHTML = "";
+                expenseList.innerHTML = "";  // Clear the table content before adding new rows
 
                 if (data && data.expenses && data.expenses.length > 0) {
                     data.expenses.forEach(expense => {
@@ -79,7 +79,7 @@
                             <td>${expense.amount}</td>
                             <td>${expense.date}</td>
                         </tr>`;
-                        expenseList.innerHTML += row;
+                        expenseList.innerHTML += row;  // Append the new row
                     });
                 } else {
                     expenseList.innerHTML = "<tr><td colspan='4'>No expenses added yet.</td></tr>";
@@ -95,4 +95,14 @@
                 } else {
                     balances.innerHTML = "<li>No balances to show.</li>";
                 }
-    
+            })
+            .catch(error => {
+                console.error(error);
+                alert("❌ Failed to load expenses.");
+            });
+        }
+
+        window.onload = loadExpenses;  // Load expenses when the page is loaded
+    </script>
+</body>
+</html>
