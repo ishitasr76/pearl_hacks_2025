@@ -25,7 +25,7 @@ function App() {
       );
       alert('Signup successful!');
     } catch (error) {
-      alert('Signup failed: ' + error.message); // Improved error message
+      alert('Signup failed: ' + error.response?.data.message || error.message); // Improved error message
     }
   };
 
@@ -35,19 +35,23 @@ function App() {
       setToken(res.data.access_token);
       alert('Login successful!');
     } catch (error) {
-      alert('Login failed');
+      alert('Login failed: ' + error.response?.data.message || error.message);
     }
   };
 
   const createEvent = async () => {
     try {
-      const res = await axios.post('http://127.0.0.1:5000/event/create', { name: eventName, user_id: 1 }, {  // Replace 1 with the actual user_id
+      const res = await axios.post('http://127.0.0.1:5000/event/create', { 
+        event_name: eventName, 
+        creator_name: "User", 
+        total_people: 10 // Modify according to your input fields
+      }, { 
         headers: { Authorization: `Bearer ${token}` }
       });
       setEvents([...events, { id: res.data.event_id, name: eventName }]);
       alert('Event created!');
     } catch (error) {
-      alert('Failed to create event');
+      alert('Failed to create event: ' + error.response?.data.message || error.message);
     }
   };
 
