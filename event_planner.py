@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_app import BudgetBot
 
 app = Flask(__name__)
 CORS(app)
@@ -193,6 +194,24 @@ def trip_form():
             return f'Trip with the name "{trip_name}" not found.'
     else:
         return 'No trip name provided!'
+
+@app.route('/chat/message', methods=['POST'])
+def chat():
+    budget_bot = BudgetBot()
+    """Route to handle chat interactions."""
+    data = request.get_json()
+
+    if not data or 'user_id' not in data or 'text' not in data:
+        return jsonify({'error': 'Invalid input, please provide user_id and text.'}), 400
+
+    user_id = data['user_id']
+    text = data['text']
+    context = data.get('context', None)  # Optional context for the bot
+
+    # Process the message through BudgetBot
+    response = budget_bot.process_message(text, user_id, context)
+
+    return jsonify({'response': response}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)

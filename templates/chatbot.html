@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Expenses Planner</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+
+
+        p {
+            color: #34495e;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            height: 500px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            margin: 20px auto;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            padding: 10px;
+        }
+
+
+        .message {
+            margin: 8px 0;
+            padding: 8px 12px;
+            border-radius: 15px;
+            max-width: 80%;
+            word-wrap: break-word;
+            position: relative;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+
+        .user-message {
+            background-color: #007bff;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+
+
+        .bot-message {
+            background-color: #e9ecef;
+            color: #2c3e50;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+            background-color: white;
+        }
+
+
+        .input-container input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+
+        .input-container input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+
+        .input-container button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+
+        .input-container button:hover {
+            background-color: #0056b3;
+            transform: translateY(-1px);
+        }
+
+
+        .input-container button:active {
+            transform: translateY(1px);
+        }
+
+
+        /* Loading indicator */
+        .typing-indicator {
+            display: none;
+            padding: 8px 12px;
+            background-color: #e9ecef;
+            border-radius: 15px;
+            margin-bottom: 8px;
+            color: #666;
+            font-style: italic;
+        }
+
+
+        /* Quick actions */
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            padding: 0 10px;
+        }
+
+
+        .quick-action-btn {
+            padding: 8px 16px;
+            background-color: #e9ecef;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+
+        .quick-action-btn:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+
+        /* Scrollbar styling */
+        .messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+
+        .messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+
+        .messages::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+
+
+        .messages::-webkit-scrollbar-thumb:hover {
+            background: #666;
+        }
+
+
+        /* Error message styling */
+        .error-message {
+            background-color: #fee;
+            color: #c00;
+            border-left: 3px solid #c00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Event Planner</h1>
+        <p>
+            Track and split expenses for your group trips easily. Ask the chatbot about expense tracking, budgeting, and cost splitting!
+        </p>
+        <div class="chat-container">
+            <div class="messages" id="messages"></div>
+            <div class="typing-indicator" id="typing-indicator">BudgetBot is typing...</div>
+            <div class="quick-actions" id="quick-actions">
+                <button class="quick-action-btn" onclick="sendQuickAction('How do I split expenses?')">Split Expenses</button>
+                <button class="quick-action-btn" onclick="sendQuickAction('Create a new group budget')">Create Budget</button>
+                <button class="quick-action-btn" onclick="sendQuickAction('Show spending summary')">View Summary</button>
+            </div>
+            <div class="input-container">
+                <input type="text" id="user_message" placeholder="Ask about expenses, budgeting, or cost splitting...">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        let isProcessing = false;
+        const typingIndicator = document.getElementById('typing-indicator');
+
+
+        window.onload = function() {
+            appendMessage('BudgetBot', 'Hello! I can help you track expenses and split costs for your group event. What would you like to know?');
+        };
+
+
+        function sendQuickAction(message) {
+            document.getElementById('user_message').value = message;
+            sendMessage();
+        }
+
+
+        async function sendMessage() {
+            if (isProcessing) return;
+
+
+            const userInput = document.getElementById('user_message');
+            const userMessage = userInput.value;
+           
+            if (!userMessage.trim()) return;
+
+
+            appendMessage('You', userMessage);
+            userInput.value = '';
+            isProcessing = true;
+            typingIndicator.style.display = 'block';
+
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: userMessage,
+                        user_id: 'default_user'
+                    })
+                });
+
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+
+                const data = await response.json();
+                appendMessage('BudgetBot', data.message || 'Sorry, I did not understand that.');
+            } catch (error) {
+                console.error('Error:', error);
+                appendMessage('BudgetBot', 'Sorry, I encountered an error. Please try again.', true);
+            } finally {
+                isProcessing = false;
+                typingIndicator.style.display = 'none';
+            }
+        }
+
+
+        function appendMessage(sender, message, isError = false) {
+            const messagesDiv = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${sender === 'You' ? 'user-message' : 'bot-message'} ${isError ? 'error-message' : ''}`;
+            messageElement.textContent = message;
+           
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+
+        document.getElementById('user_message').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !isProcessing) {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
