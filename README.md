@@ -7,7 +7,7 @@ We were inspired by the common challenge of tracking and splitting expenses in g
 Splitzy allows groups to input their expenses on a shared page, automatically calculating who owes what and to whom. The AI chatbot helps users throughout the process, ensuring everything is clear and easy to track. It’s a seamless way to manage shared costs for any event, trip, or casual hangout.
 
 ## How we built it
-We built Splitzy using a combination of front-end and back-end technologies, with a focus on user experience. The front-end was developed with [insert front-end tech], while the back-end was powered by [insert back-end tech]. We also integrated an AI chatbot to streamline the process and provide user assistance. Collaboration and dynamic user input were key components in designing the system.
+We built Splitzy using a combination of front-end and back-end technologies, with a focus on user experience. The front-end was developed with HTML, while the back-end was powered by Flask and python. We also integrated an AI chatbot to streamline the process and provide user assistance. Collaboration and dynamic user input were key components in designing the system.
 
 ## Challenges we ran into
 We faced challenges around ensuring real-time updates for users, making sure calculations were always accurate, and integrating the AI chatbot seamlessly. Handling multiple user inputs at once while maintaining a smooth experience was a technical hurdle, but we overcame it with effective system design and testing.
