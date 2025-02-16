@@ -47,6 +47,7 @@
         });
     
         // Handle the form submission
+<<<<<<< HEAD
         document.getElementById("event-form").addEventListener("submit", function(e) {
             e.preventDefault(); // Prevent form from submitting the default way
     
@@ -98,3 +99,56 @@
 <!-- </body>
 </html> --> -->
 
+=======
+       // Handle the form submission
+document.getElementById("event-form").addEventListener("submit", function(e) {
+    e.preventDefault(); // Prevent form from submitting the default way
+
+    const formData = new FormData(this); // Get form data
+    const data = {};
+
+    // Convert FormData to a plain object
+    formData.forEach((value, key) => {
+        data[key] = value;
+    });
+
+    // Collect the attendees' names and emails
+    const totalPeople = parseInt(data['total_people'], 10);
+    const attendees = [];
+    for (let i = 1; i <= totalPeople; i++) {
+        const personName = data[`person_${i}_name`];
+        const personEmail = data[`person_${i}_email`];
+        if (personName && personEmail) {
+            attendees.push({name: personName, email: personEmail}); // Add name and email to attendees list
+        }
+    }
+
+    // Send POST request with JSON payload
+    fetch("http://127.0.0.1:5000/event/create", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            ...data,  // Include main form data
+            attendees: attendees  // Add attendees' names and emails to the data
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message === "Event created successfully") {
+            alert("✅ Event created successfully!");
+            window.location.href = '/';  // Redirect to the homepage
+        } else {
+            alert("⚠️ " + data.message);
+        }
+    })
+    .catch(error => {
+        alert("❌ Event creation failed. Please try again.");
+        console.error(error);
+    });
+});
+    </script>
+</body>
+</html>
+>>>>>>> ca8d6b025f25ecc0149486c2aaebd7ae9494e453
